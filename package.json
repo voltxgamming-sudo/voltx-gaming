@@ -1,0 +1,10 @@
+{
+  "name": "voltx-gaming-storefront",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Static GitHub Pages storefront (demo). Source of the site is in /docs.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/order.test.js"
+  }
+}

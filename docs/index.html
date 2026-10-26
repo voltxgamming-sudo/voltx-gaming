@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'self'; object-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="VoltX Gaming demo top-up storefront. Sample packages and prices. Requests are sent by WhatsApp; no payments are taken on this page.">
+  <title>VoltX Gaming · Level Up Your Game (Demo)</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="demo-banner" role="note">DEMO STORE · Prices and packages are sample data. No payment is taken here and no top-up is delivered by this page.</div>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#/" aria-label="VoltX Gaming home">
+        <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#00D4FF"/><stop offset="1" stop-color="#7B3DFF"/></linearGradient></defs><path d="M18.5 4 8 18h7l-2 10 11-14h-7z" fill="url(#lg)"/></svg>
+        <span>VOLT<b>X</b></span>
+      </a>
+      <button id="navToggle" class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+      <nav id="siteNav" class="site-nav" aria-label="Main">
+        <a href="#/">Home</a>
+        <a href="#/games">Games</a>
+        <a href="#/how">How It Works</a>
+        <a href="#/faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="app" class="wrap" tabindex="-1">
+    <noscript><p class="notice">This storefront needs JavaScript to show the catalogue and build request summaries.</p></noscript>
+    <p class="loading">Loading…</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><strong>VoltX Gaming</strong> · Demo storefront.</p>
+      <p class="small muted">Independent project. Not affiliated with, sponsored by or endorsed by PUBG Corporation, Garena, Roblox Corporation, Moonton or any game publisher. Game names identify the products only.</p>
+      <p class="small muted"><a href="#/faq">FAQ</a> · <a href="#/how">How It Works</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

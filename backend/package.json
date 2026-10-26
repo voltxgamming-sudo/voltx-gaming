@@ -1,0 +1,15 @@
+{
+  "name": "voltx-gaming-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OPTIONAL Node.js + SQLite backend. Not needed for the GitHub Pages storefront in /docs. Requires a separate server host.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning server.js",
+    "dev": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --watch server.js",
+    "create-admin": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning scripts/create-admin.js"
+  }
+}
