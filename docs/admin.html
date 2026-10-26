@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoltX Gaming | Admin</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Arial, sans-serif;
+      background: #090d18;
+      color: #f5f7ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; }
+    main { max-width: 760px; margin: 30px auto; }
+    .card {
+      background: #121a2b;
+      border: 1px solid #283652;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    h1 { color: #55e5ff; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 7px 0;
+      border-radius: 9px;
+      font: inherit;
+    }
+    input {
+      background: #080e1c;
+      border: 1px solid #35445f;
+      color: white;
+    }
+    button {
+      border: 0;
+      background: #57dfff;
+      color: #06101c;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.secondary { background: #293750; color: white; }
+    .package {
+      border: 1px solid #34425e;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+    .muted { color: #a8b4ca; font-size: 14px; }
+    #status { white-space: pre-wrap; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>VoltX Gaming ⚡</h1>
+  <p class="muted">Admin dashboard · Manage package prices</p>
+
+  <section class="card" id="loginPanel">
+    <h2>Admin Login</h2>
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input id="email" type="email"
+        value="manger@voltx.com" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password"
+        autocomplete="current-password" required>
+
+      <button type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <section class="card" id="dashboard" hidden>
+    <h2>Package Prices</h2>
+    <p class="muted">Changes are saved to Supabase.</p>
+    <button class="secondary" id="reloadButton">Reload packages</button>
+    <div id="packages"></div>
+    <button class="secondary" id="logoutButton">Sign out</button>
+  </section>
+
+  <section class="card">
+    <p id="status" role="status">Configure Supabase to begin.</p>
+    <p><a href="./index.html" style="color:#55e5ff">Back to store</a></p>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // Replace these with your project's public URL and publishable key.
+  // Never put a service_role or secret key in this file.
+  const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+  const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+  const statusBox = document.querySelector("#status");
+  const loginPanel = document.querySelector("#loginPanel");
+  const dashboard = document.querySelector("#dashboard");
+  const packagesBox = document.querySelector("#packages");
+  const loginForm = document.querySelector("#loginForm");
+
+  const configured =
+    SUPABASE_URL.startsWith("https://") &&
+    !SUPABASE_URL.includes("YOUR_") &&
+    !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_");
+
+  if (!configured) {
+    statusBox.textContent =
+      "Setup required: add your Supabase project URL and publishable key.";
+  } else {
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    async function showSession() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const signedIn = Boolean(data.session);
+      loginPanel.hidden = signedIn;
+      dashboard.hidden = !signedIn;
+
+      if (signedIn) await loadPackages();
+    }
+
+    async function loadPackages() {
+      statusBox.textContent = "Loading packages...";
+      const { data, error } = await supabase
+        .from("game_packages")
+        .select("id, game_name, package_name, price, is_active")
+        .order("game_name")
+        .order("package_name");
+
+      if (error) {
+        statusBox.textContent = "Could not load packages: " + error.message;
+        return;
+      }
+
+      packagesBox.replaceChildren();
+
+      if (!data.length) {
+        statusBox.textContent =
+          "No packages found. Add packages after connecting your catalog.";
+        return;
+      }
+
+      for (const item of data) {
+        const card = document.createElement("div");
+        card.className = "package";
+
+        const title = document.createElement("h3");
+        title.textContent = item.game_name + " — " + item.package_name;
+
+        const price = document.createElement("input");
+        price.type = "number";
+        price.min = "0";
+        price.step = "0.01";
+        price.value = item.price;
+        price.setAttribute("aria-label", "Price");
+
+        const save = document.createElement("button");
+        save.textContent = "Save price";
+
+        save.addEventListener("click", async () => {
+          const newPrice = Number(price.value);
+          if (!Number.isFinite(newPrice) || newPrice < 0) {
+            statusBox.textContent = "Enter a valid non-negative price.";
+            return;
+          }
+
+          save.disabled = true;
+          statusBox.textContent = "Saving...";
+
+          const { error } = await supabase
+            .from("game_packages")
+            .update({ price: newPrice, updated_at: new Date().toISOString() })
+            .eq("id", item.id);
+
+          save.disabled = false;
+
+          if (error) {
+            statusBox.textContent =
+              "Save failed. Check admin permissions: " + error.message;
+            return;
+          }
+
+          statusBox.textContent = "Price saved successfully.";
+        });
+
+        card.append(title, price, save);
+        packagesBox.append(card);
+      }
+
+      statusBox.textContent = "Packages loaded.";
+    }
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      statusBox.textContent = "Signing in...";
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: document.querySelector("#email").value.trim(),
+        password: document.querySelector("#password").value
+      });
+
+      if (error) {
+        statusBox.textContent = "Login failed: " + error.message;
+        return;
+      }
+
+      document.querySelector("#password").value = "";
+      try {
+        await showSession();
+        statusBox.textContent = "Signed in.";
+      } catch (err) {
+        statusBox.textContent = "Error: " + err.message;
+      }
+    });
+
+    document.querySelector("#reloadButton").addEventListener(
+      "click", loadPackages
+    );
+
+    document.querySelector("#logoutButton").addEventListener("click",
+      async () => {
+        await supabase.auth.signOut();
+        packagesBox.replaceChildren();
+        await showSession();
+        statusBox.textContent = "Signed out.";
+      }
+    );
+
+    supabase.auth.onAuthStateChange(() => {
+      showSession().catch(err => {
+        statusBox.textContent = "Error: " + err.message;
+      });
+    });
+
+    showSession().catch(err => {
+      statusBox.textContent = "Error: " + err.message;
+    });
+  }
+</script>
+</body>
+</html>
